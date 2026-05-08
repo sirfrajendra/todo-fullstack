@@ -23,4 +23,6 @@ model Todo {
   user   User @relation(fields: [userId], references: [id])
 
   createdAt DateTime @default(now())
+
+  @@unique([id, userId])
 }
