@@ -42,9 +42,7 @@ export class TodosService {
         id,
         userId,
       },
-      data: {
-        completed: dto.completed,
-      },
+      data: dto,
     });
   }
 

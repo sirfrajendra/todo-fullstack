@@ -13,6 +13,12 @@ export default function TodosPage() {
 
   const [title, setTitle] = useState('');
 
+  const [editingId, setEditingId] =
+  useState<number | null>(null);
+
+  const [editTitle, setEditTitle] =
+  useState('');
+
   async function fetchTodos() {
     const token =
       localStorage.getItem('token');
@@ -59,26 +65,27 @@ export default function TodosPage() {
     fetchTodos();
   }
 
-  async function toggleTodo(
-    id: number,
-    completed: boolean,
-  ) {
-    const token =
-      localStorage.getItem('token');
+  async function updateTodo(id: number) {
+  const token =
+    localStorage.getItem('token');
 
-    await axios.patch(
-      `http://localhost:3001/todos/${id}`,
-      {
-        completed: !completed,
+  await axios.patch(
+    `http://localhost:3001/todos/${id}`,
+    {
+      title: editTitle,
+    },
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
       },
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      },
-    );
+    },
+  );
 
-    fetchTodos();
+  setEditingId(null);
+
+  setEditTitle('');
+
+  fetchTodos();
   }
 
   async function deleteTodo(id: number) {
@@ -141,45 +148,65 @@ export default function TodosPage() {
       </div>
 
       <div className="space-y-3">
-        {todos.map((todo: any) => (
-          <div
-            key={todo.id}
-            className="border p-3 flex justify-between"
-          >
-            <p
-              className={
-                todo.completed
-                  ? 'line-through'
-                  : ''
-              }
+            {todos.map((todo: any) => (
+            <div
+              key={todo.id}
+              className="border p-3 flex justify-between items-center"
             >
-              {todo.title}
-            </p>
+              {editingId === todo.id ? (
+                <input
+                  className="border p-2 flex-1 mr-2"
+                  value={editTitle}
+                  onChange={(e) =>
+                    setEditTitle(e.target.value)
+                  }
+                />
+              ) : (
+                <p
+                  className={
+                    todo.completed
+                      ? 'line-through'
+                      : ''
+                  }
+                >
+                  {todo.title}
+                </p>
+              )}
 
-            <div className="flex gap-2">
-              <button
-                onClick={() =>
-                  toggleTodo(
-                    todo.id,
-                    todo.completed,
-                  )
-                }
-                className="bg-green-600 text-white px-2"
-              >
-                Toggle
-              </button>
+              <div className="flex gap-2">
+                {editingId === todo.id ? (
+                  <button
+                    onClick={() =>
+                      updateTodo(todo.id)
+                    }
+                    className="bg-blue-600 text-white px-3 py-1"
+                  >
+                    Save
+                  </button>
+                ) : (
+                  <button
+                    onClick={() => {
+                      setEditingId(todo.id);
 
-              <button
-                onClick={() =>
-                  deleteTodo(todo.id)
-                }
-                className="bg-red-600 text-white px-2"
-              >
-                Delete
-              </button>
+                      setEditTitle(todo.title);
+                    }}
+                    className="bg-yellow-500 text-white px-3 py-1"
+                  >
+                    Edit
+                  </button>
+                )}
+
+                <button
+                  onClick={() =>
+                    deleteTodo(todo.id)
+                  }
+                  className="bg-red-600 text-white px-3 py-1"
+                >
+                  Delete
+                </button>
+              </div>
             </div>
-          </div>
-        ))}
+          ))}
       </div>
     </div>
   );
